@@ -6,7 +6,7 @@ class Display():
     def __init__(self, port = "/dev/tty.usbmodem1412"):
         self.port = port
         self.baud = 115200
-        self.ser = serial.Serial(self.port, self.baud, timeout=.005)
+        self.ser = serial.Serial(self.port, self.baud, timeout=.05)
         self.sio = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser))
         assert self.ser.isOpen(), "%s is not open" % self.port
         self.x = 50
@@ -51,11 +51,15 @@ class Display():
         # if x and y are not specified, they default to the previous point
         if x and y:
             self.xy(x, y)
+        font_sizes = [24, 36, 48, 72]
+        assert size in font_sizes, "%s is not one of these valid font sizes: %s" % (size, font_sizes)
         self.cmd("font %s%s" % (font, size))
         t_orientation = orientation
         if t_orientation > 3:
             t_orientation /= 90
+            t_orientation = int(t_orientation)
         assert -1 < t_orientation < 4, "%s rotation is not valid" % orientation
+        self.cmd('fonto %s' % t_orientation)
         self.cmd('print "%s"' % string)
 
     def cmd(self, string):
@@ -65,15 +69,56 @@ class Display():
         else:
             self.sio.write((string + '\r')) #.encode('ascii'))
             self.sio.flush()
-            response = self.sio.read(10)
+            message = ""
+            response = self.sio.read(1)
+            print("m: %s, r:%s" % (message, response))
+            count = 300
+            while count > 0 and response != "\n":
+                count -= 1
+                message += response
+                response = self.sio.read(1)
+
             # self.ser.write((string + '\r').encode('ascii'))
             # response = str(self.ser.read(100))
 
-            print('Code: ' + str(response.encode('ascii')) + " - " + string)
+            if message:
+                print('Code: ' + str(message.encode('ascii')) + " - " + string)
+            return response
 
-    def last_touch(self):
+    def touch(self):
         """Returns a tuple that is the coordinate of the last touch"""
-        pass
+        x = int(self.cmd("touchx").strip())
+        y = int(self.cmd("touchy").strip())
+        return (x,y)
+
+    def process_touch(self):
+        """Returns an int indicating touch status"""
+        return int(self.cmd("touchs").strip())
+
+    def is_touching(self):
+        """Returns boolean on touch status"""
+        return self.process_touch() == 3
+
+    def wait_for_touch(self):
+        """Return touch coordinate after waiting"""
+        # Wait for touch
+        while not self.is_touching():
+            pass
+
+        # Wait for release
+        while self.is_touching():
+            pass
+
+        return self.touch()
+
+    def line_draw(self):
+        first = self.wait_for_touch()
+        second = self.wait_for_touch()
+        self.line(first[0],first[1],second[0],second[1])
+
+    def live_tap(self):
+        p = self.wait_for_touch()
+        self.print(str(p), p[0], p[1], font=2)
 
     def live(self):
         while True:
