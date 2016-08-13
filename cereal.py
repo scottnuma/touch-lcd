@@ -7,18 +7,22 @@ class Display():
         self.port = port
         self.baud = 115200
         self.ser = serial.Serial(self.port, self.baud, timeout=.05)
-        self.sio = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser))
+        self.sio = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser), newline=None)
         assert self.ser.isOpen(), "%s is not open" % self.port
         self.x = 50
         self.y = 50
         self.xy(self.x, self.y)
 
-    def xy(self, x, y):
+    def xy(self, x=None, y=None):
         """Moves the cursor to specificed x and y
 
         x = 50 and y = 100 will place the cursor 50 pixels
         from the right and 100 pixels down
         """
+        if x == None and y == None:
+            pos_str = self.cmd("xy")
+            coor = pos_str.split()
+            return (int(coor[0]), int(coor[1]))
 
         # Only update if necessary
         # This could glitch if xy is set throgh Display.cmd
@@ -63,30 +67,34 @@ class Display():
         self.cmd('print "%s"' % string)
 
     def cmd(self, string):
+        """Issues a command to the display
+
+        String must be written in the syntax of the ezLCD
+        String could also be a list of string commands
+        """
+
         if type(string) == list:
             for mini_command in string:
                 self.cmd(mini_command)
         else:
             self.sio.write((string + '\r')) #.encode('ascii'))
             self.sio.flush()
-            message = ""
-            response = self.sio.read(1)
-            print("m: %s, r:%s" % (message, response))
-            count = 300
-            while count > 0 and response != "\n":
-                count -= 1
-                message += response
-                response = self.sio.read(1)
 
-            # self.ser.write((string + '\r').encode('ascii'))
-            # response = str(self.ser.read(100))
-
-            if message:
-                print('Code: ' + str(message.encode('ascii')) + " - " + string)
+            response = ""
+            while not response:
+                response = self.sio.readline().encode('ascii').decode('utf-8')
+            response = remove_new_line(response)
+            if response:
+                print('Code: ' + response + " - " + string)
             return response
 
     def touch(self):
-        """Returns a tuple that is the coordinate of the last touch"""
+        """Returns a tuple that is the coordinate of the last touch
+
+        This reading tends to not be very accurate, especially on the
+        left side of the screen
+        """
+
         x = int(self.cmd("touchx").strip())
         y = int(self.cmd("touchy").strip())
         return (x,y)
@@ -121,7 +129,8 @@ class Display():
         self.print(str(p), p[0], p[1], font=2)
 
     def live(self):
-        while True:
+        order = "stuff"
+        while True and order:
             order = input("> ")
             if order == 'exit':
                 self.ser.close()
@@ -142,6 +151,16 @@ class Display():
                     self.cmd(command)
                     self.cmd('cls 180')
                     time.sleep(.1)
+
+def remove_new_line(string):
+    """Removes a new line at the end of a character if present"""
+    length = len(string)
+    if not length:
+        return string
+    if string.endswith("\n"):
+        return string[:-1]
+    else:
+        return string
 
 if __name__ == "__main__":
     a = Display()
