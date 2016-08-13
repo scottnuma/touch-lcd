@@ -9,10 +9,7 @@ class Display():
         self.ser = serial.Serial(self.port, self.baud, timeout=.05)
         self.sio = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser), newline=None)
         assert self.ser.isOpen(), "%s is not open" % self.port
-        self.x = 50
-        self.y = 50
-        self.xy(self.x, self.y)
-
+    
     def xy(self, x=None, y=None):
         """Moves the cursor to specificed x and y
 
@@ -24,10 +21,16 @@ class Display():
             coor = pos_str.split()
             return (int(coor[0]), int(coor[1]))
 
-        # Only update if necessary
-        # This could glitch if xy is set throgh Display.cmd
-        if x !=  self.x and y != self.y:
-            self.cmd("xy %s %s" % (x, y))
+        if x != None and y == None:
+            lat = ["L","C","R","l","c","r"]
+            vert =[ "T","C","B","t","c","b"]
+
+            assert x[0] in lat, "Not a valid position"
+            assert x[1] in vert, "Not a valid position"
+
+            return self.cmd("xy " + x)
+            
+        self.cmd("xy %s %s" % (x, y))
 
     def line(self, x1, y1, x2, y2, line_type="solid", line_width="thin"):
         """Draws a line from (x1, y1) to (x2, y2)"""
@@ -51,13 +54,13 @@ class Display():
 
         self.cmd("line %s %s" % (x2, y2))
 
-    def print(self, string, x=None, y=None, font="sans", size=36, orientation=0):
+    def print(self, string, x=None, y=None, font="sans", size=14, orientation=0):
         # if x and y are not specified, they default to the previous point
         if x and y:
             self.xy(x, y)
-        font_sizes = [24, 36, 48, 72]
-        assert size in font_sizes, "%s is not one of these valid font sizes: %s" % (size, font_sizes)
+
         self.cmd("font %s%s" % (font, size))
+
         t_orientation = orientation
         if t_orientation > 3:
             t_orientation /= 90
@@ -141,7 +144,7 @@ class Display():
                 self.cmd(order)
 
     def cls(self, color="white"):
-        self.cmd("cls white")
+        self.cmd("cls white black")
 
     def color_cycle(self):
         for r in reversed(range(0, 256, 10)):
