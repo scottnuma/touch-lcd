@@ -1,3 +1,4 @@
+
 from __future__ import print_function
 import httplib2
 import os
@@ -8,7 +9,7 @@ from oauth2client import client
 from oauth2client import tools
 
 import datetime
-
+import cereal
 try:
     import argparse
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
@@ -63,15 +64,25 @@ def main():
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
     print('Getting the upcoming 10 events')
     eventsResult = service.events().list(
-        calendarId='primary', timeMin=now, maxResults=10, singleEvents=True,
+        calendarId='primary', timeMin=now, maxResults=15, singleEvents=True,
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
 
+    lcd = cereal.Display()
+    lcd.cmd("cls black green")
+    lcd.print("Calendar - List View")
+    lcd.new_line()
     if not events:
         print('No upcoming events found.')
+        lcd.print('No upcoming events found.')
     for event in events:
-        start = event['start'].get('dateTime', event['start'].get('date'))
+        start = event['start'].get('dateTime', event['start'].get('date'))[:10]
+        print('type: %s' % type(start))
         print(start, event['summary'])
+        lcd.print(start)
+        lcd.print(' ')
+        lcd.print(event['summary'])
+        lcd.new_line()
 
 
 if __name__ == '__main__':
