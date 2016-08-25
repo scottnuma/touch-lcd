@@ -22,7 +22,6 @@ SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
-
 def get_credentials():
     """Gets valid user credentials from storage.
 
@@ -62,9 +61,9 @@ def main():
     service = discovery.build('calendar', 'v3', http=http)
 
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-    print('Getting the upcoming 10 events')
+    print('Getting the upcoming 15 events')
     eventsResult = service.events().list(
-        calendarId='primary', timeMin=now, maxResults=15, singleEvents=True,
+        calendarId='di07bfssiboo5ei07l9u6mkta4@group.calendar.google.com', timeMin=now, maxResults=19, singleEvents=True,
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
 
@@ -79,9 +78,9 @@ def main():
         start = event['start'].get('dateTime', event['start'].get('date'))[:10]
         print('type: %s' % type(start))
         print(start, event['summary'])
-        lcd.print(start)
-        lcd.print(' ')
-        lcd.print(event['summary'])
+        lcd.print(start, size=20)
+        lcd.print(' ', size = 20)
+        lcd.print(event['summary'], size=20)
         lcd.new_line()
 
 

@@ -1,13 +1,21 @@
 """A demonstration of Python's ability to interface with the ezLCD-304"""
 
-import serial, time, io
+import serial, time, io, os
 
 class Display():
     """Controls a ezLCD-403 connected via USB"""
-    def __init__(self, port = "/dev/tty.usbmodem1412", baud = 115200):
+    default_port = "/dev/tty.usbmodem1422"
+
+    def __init__(self, port = default_port, baud = 115200):
         self.port = port
         self.baud = baud
-        self.ser = serial.Serial(self.port, self.baud, timeout=.05)
+        try:
+            self.ser = serial.Serial(self.port, self.baud, timeout=.05)
+        except serial.serialutil.SerialException as e:
+            print("No USB device found at port %s" % port)
+            print("Available ports:")
+            os.system("ls /dev/tty.*")
+            raise
         self.sio = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser), newline=None)
         assert self.ser.isOpen(), "%s is not open" % self.port
 
