@@ -1,3 +1,4 @@
+"""Display the upcoming events from Google Calendar on an ezLCD"""
 
 from __future__ import print_function
 import httplib2
@@ -10,6 +11,7 @@ from oauth2client import tools
 
 import datetime
 import cereal
+
 try:
     import argparse
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
@@ -21,6 +23,7 @@ except ImportError:
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
+NUMBER_OF_EVENTS_SHOWN = 10
 
 def get_credentials():
     """Gets valid user credentials from storage.
@@ -54,23 +57,25 @@ def main():
     """Shows basic usage of the Google Calendar API.
 
     Creates a Google Calendar API service object and outputs a list of the next
-    10 events on the user's calendar.
+    events on the user's calendar.
     """
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
-    print('Getting the upcoming 15 events')
+    print('Getting the upcoming events')
     eventsResult = service.events().list(
-        calendarId='di07bfssiboo5ei07l9u6mkta4@group.calendar.google.com', timeMin=now, maxResults=19, singleEvents=True,
+        calendarId='di07bfssiboo5ei07l9u6mkta4@group.calendar.google.com', timeMin=now, maxResults=NUMBER_OF_EVENTS_SHOWN, singleEvents=True,
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
 
     lcd = cereal.Display()
-    lcd.cmd("cls black green")
-    lcd.print("Calendar - List View")
+    lcd.cmd("cls black white")
+    lcd.print("Calendar")
     lcd.new_line()
+    lcd.new_line()
+
     if not events:
         print('No upcoming events found.')
         lcd.print('No upcoming events found.')
@@ -82,7 +87,6 @@ def main():
         lcd.print(' ', size = 20)
         lcd.print(event['summary'], size=20)
         lcd.new_line()
-
 
 if __name__ == '__main__':
     main()

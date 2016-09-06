@@ -1,3 +1,5 @@
+"""A proof of concept of Python's ability to use show useful daily info"""
+
 import quickstart as cal
 import pytz, os, pyowm
 from datetime import datetime
