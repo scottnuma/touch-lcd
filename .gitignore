@@ -1,4 +1,5 @@
 calendar/client_secret.json
+client_secret.json
 __pycache__
 __pycache__/*
 .cereal.*
