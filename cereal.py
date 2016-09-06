@@ -1,14 +1,33 @@
-"""A demonstration of Python's ability to interface with the ezLCD-304"""
+"""A demonstration of Python's ability to interface with the ezLCD-304
+
+Cereal.py - A Python Implementation to control the ezLCD-3xx Product Family
+"""
 
 import serial, time, io, os
 
+# Default baud rate for serial communication with ezLCD
+BAUD_RATE = 115200
+
+# If developing on a raspberry pi, the default port is likely to be
+# the following preset value
+
+RASPBERRY_PI_DEVELOPMENT = False
+
+if (RAPSBERRY_PI_DEVELOPMENT){
+    # Default port for raspberry pi development
+    default_port = "/dev/ttyACM0" 
+}
+else{
+    # Default port for desktop development
+    default_port = "/dev/tty.usbmodem1422"
+}
+
 class Display():
     """Controls a ezLCD-403 connected via USB"""
-    default_port = "/dev/tty.usbmodem1422"
 
-    def __init__(self, port = default_port, baud = 115200):
+    def __init__(self, port = default_port):
         self.port = port
-        self.baud = baud
+        self.baud = BAUD_RATE
         try:
             self.ser = serial.Serial(self.port, self.baud, timeout=.05)
         except serial.serialutil.SerialException as e:
