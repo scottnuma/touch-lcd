@@ -11,16 +11,14 @@ BAUD_RATE = 115200
 # If developing on a raspberry pi, the default port is likely to be
 # the following preset value
 
-RASPBERRY_PI_DEVELOPMENT = False
+RASPBERRY_PI_DEVELOPMENT = True
 
-if (RAPSBERRY_PI_DEVELOPMENT){
+if (RASPBERRY_PI_DEVELOPMENT):
     # Default port for raspberry pi development
-    default_port = "/dev/ttyACM0" 
-}
-else{
+    default_port = "/dev/ttyACM0"
+else:
     # Default port for desktop development
     default_port = "/dev/tty.usbmodem1422"
-}
 
 class Display():
     """Controls a ezLCD-403 connected via USB"""
