@@ -1,4 +1,6 @@
-"""Display the upcoming events from Google Calendar on an ezLCD"""
+"""Display the upcoming events from Google Calendar
+
+Based upon the Google Quickstart: https://developers.google.com/google-apps/calendar/quickstart/python"""
 
 from __future__ import print_function
 import httplib2
@@ -10,7 +12,6 @@ from oauth2client import client
 from oauth2client import tools
 
 import datetime
-import cereal
 
 try:
     import argparse
@@ -53,6 +54,14 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
+def cal_print(calendar):
+    for event in calendar:
+        print(format_event(event))
+
+def format_event(event):
+    """Returns an string with the start, end, and summary"""
+    return "" + event['start']['dateTime'][11:-9] + " - " + event['end']['dateTime'][11:-9] + " " + event['summary']
+
 def main():
     """Shows basic usage of the Google Calendar API.
 
@@ -70,23 +79,7 @@ def main():
         orderBy='startTime').execute()
     events = eventsResult.get('items', [])
 
-    lcd = cereal.Display()
-    lcd.cmd("cls black white")
-    lcd.print("Calendar")
-    lcd.new_line()
-    lcd.new_line()
-
-    if not events:
-        print('No upcoming events found.')
-        lcd.print('No upcoming events found.')
-    for event in events:
-        start = event['start'].get('dateTime', event['start'].get('date'))[:10]
-        print('type: %s' % type(start))
-        print(start, event['summary'])
-        lcd.print(start, size=20)
-        lcd.print(' ', size = 20)
-        lcd.print(event['summary'], size=20)
-        lcd.new_line()
+    cal_print(events)
 
 if __name__ == '__main__':
     main()

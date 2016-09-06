@@ -11,7 +11,7 @@ BAUD_RATE = 115200
 # If developing on a raspberry pi, the default port is likely to be
 # the following preset value
 
-RASPBERRY_PI_DEVELOPMENT = True
+RASPBERRY_PI_DEVELOPMENT = False
 
 if (RASPBERRY_PI_DEVELOPMENT):
     # Default port for raspberry pi development

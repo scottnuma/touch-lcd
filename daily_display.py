@@ -1,8 +1,9 @@
 """A proof of concept of Python's ability to use show useful daily info"""
 
-import quickstart as cal
+import quick_start as cal
 import pytz, os, pyowm
 from datetime import datetime
+import easy_cereal
 
 # Import the calendar ID's from environment variables to protect privacy
 calendarIds = { 'classes':os.environ['CLASSES_CALENDAR_ID'],'main':os.environ['MAIN_CALENDAR_ID']}
@@ -55,8 +56,26 @@ def format_event(event):
 
 calA = get_events('main')
 calB = get_events('classes')
-combo = calB + calA
-combo.sort(key=lambda e:e['start']['dateTime'])
-cal_print(combo)
+combined_classes = calB + calA
+combined_classes.sort(key=lambda e:e['start']['dateTime'])
 
 print(get_weather())
+
+lcd = easy_cereal.Display()
+lcd.cmd("cls black white")
+lcd.print("Calendar")
+lcd.new_line()
+lcd.new_line()
+
+if not events:
+    print('No upcoming events found.')
+    lcd.print('No upcoming events found.')
+
+for event in combined_classes:
+    start = event['start'].get('dateTime', event['start'].get('date'))[:10]
+    print('type: %s' % type(start))
+    print(start, event['summary'])
+    lcd.print(start, size=20)
+    lcd.print(' ', size = 20)
+    lcd.print(event['summary'], size=20)
+    lcd.new_line()
