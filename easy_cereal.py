@@ -127,7 +127,7 @@ class Display():
 
     def new_line(self):
         """Moves the cursor down one line"""
-        self.xy(self.x, self.y + self.font_size)
+        self.xy(self.x, self.y + self.font_size * 1.5)
 
     def cmd(self, string):
         """Issues a command to the display
@@ -206,7 +206,7 @@ class Display():
 
     def cls(self):
         """Clears the screen to white with black text"""
-        self.cmd("cls white black")
+        self.cmd("cls black white")
 
 def remove_new_line(string):
     """Removes a new line at the end of a character if present"""
